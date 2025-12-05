@@ -209,7 +209,7 @@ function App() {
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 text-primary">
                     <Clock size={16} />
-                    <span className="font-bold text-white">4+</span>
+                    <span className="font-bold text-white">3.5+</span>
                   </div>
                   <span className="text-xs opacity-60">YEARS EXPERIENCE</span>
                 </div>
