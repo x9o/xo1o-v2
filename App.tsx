@@ -14,7 +14,10 @@ import { fetchGameStats, formatCount } from './services/robloxService';
 const SHOW_TECHNICAL_SCOPE = false;
 
 // Flag to control visibility of descriptions in cards
-const SHOW_PROJECT_DESCRIPTIONS = true;
+const SHOW_PROJECT_DESCRIPTIONS = false;
+
+// Flag to toggle hero TextScramble animation (off = plain text, no effect overhead)
+const ENABLE_TEXT_SCRAMBLE = false;
 
 // Internal Icon Components just for social logos if not available in lucide or preferred custom
 const DiscordIcon = ({ className }: { className?: string }) => (
@@ -33,6 +36,7 @@ function App() {
   const [showCopyNotification, setShowCopyNotification] = useState(false);
   const [totalVisits, setTotalVisits] = useState<string>("35M+");
   const [totalCCU, setTotalCCU] = useState<string>("5K+");
+  const TitleScramble: React.ComponentType<{ children: React.ReactNode }> = ENABLE_TEXT_SCRAMBLE ? TextScramble : React.Fragment;
 
   useEffect(() => {
     // Robust smooth scrolling for all anchor links
@@ -121,7 +125,9 @@ function App() {
       <nav className="fixed top-0 w-full z-40 bg-background/70 backdrop-blur-xl border-b border-white/5 supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <a href="#home" className="text-xl font-bold tracking-tighter flex items-center gap-2 group cursor-pointer">
-            <span className="w-8 h-8 rounded bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm shadow-lg group-hover:shadow-primary/50 transition-all duration-300 font-mono">X</span>
+            <div className="w-8 h-8 rounded overflow-hidden shadow-lg group-hover:shadow-primary/50 transition-all duration-300">
+              <img src="/favicon.ico" alt="xo1o" className="w-full h-full object-cover" />
+            </div>
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all font-mono">xo1o<span className="text-gray-600 group-hover:text-gray-400">.xyz</span></span>
           </a>
           
@@ -177,8 +183,8 @@ function App() {
             
             <RevealOnScroll delay={200}>
               <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.0] mb-6">
-                <TextScramble>Build.</TextScramble> <br/>
-                <TextScramble>Script.</TextScramble> <br/>
+                <TitleScramble>Build.</TitleScramble> <br/>
+                <TitleScramble>Script.</TitleScramble> <br/>
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent animate-shimmer bg-[length:200%_auto]">
                   Dominate.
                 </span>

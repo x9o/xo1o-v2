@@ -19,101 +19,128 @@ const VideoCard: React.FC<{ video: VideoProject; showDescription: boolean; isDra
   const [isFlipped, setIsFlipped] = useState(false);
   const flipImageUrl = video.flipImageUrl;
   const canFlip = !!flipImageUrl;
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [spotlightPosition, setSpotlightPosition] = useState({ x: 0, y: 0 });
+  const [spotlightOpacity, setSpotlightOpacity] = useState(0);
 
   const handleFlip = (e: React.MouseEvent) => {
     if (isDragging || !canFlip) return;
     setIsFlipped(!isFlipped);
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+
+    const rect = cardRef.current.getBoundingClientRect();
+    setSpotlightPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  const handleMouseEnter = () => setSpotlightOpacity(1);
+  const handleMouseLeave = () => setSpotlightOpacity(0);
+
   return (
     <div 
+        ref={cardRef}
         className={`h-full group bg-black/40 backdrop-blur-md rounded-xl overflow-hidden border border-white/5 hover:border-white/20 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 relative flex flex-col ${canFlip && !isDragging ? 'cursor-pointer' : ''}`}
         onClick={handleFlip}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
     >
-        {/* Media Container with Flip Logic */}
-        <div 
-            className="relative w-full pt-[56.25%] bg-black flex-shrink-0" 
-            style={{ perspective: '1000px' }}
-        >
-            {/* Flip Indicator (Now Outside the 3D Container so it doesn't flip/mirror) */}
-            {canFlip && (
-                <div 
-                    className={`absolute top-3 right-3 z-20 transition-opacity duration-300 pointer-events-none ${isFlipped ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}
-                >
-                    <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-white flex items-center gap-2 shadow-xl">
-                        <RotateCw size={14} className="text-primary animate-spin-slow" />
-                        <span className="font-mono text-[10px] font-bold uppercase tracking-wider">Click card to Flip</span>
-                    </div>
-                </div>
-            )}
-
-            {/* 3D Wrapper */}
+        <div
+            className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 z-10"
+            style={{
+                opacity: spotlightOpacity,
+                background: `radial-gradient(600px circle at ${spotlightPosition.x}px ${spotlightPosition.y}px, rgba(99, 102, 241, 0.4), transparent 40%)`
+            }}
+        />
+        <div className="absolute inset-[1px] bg-black/40 backdrop-blur-md rounded-xl z-10" />
+        <div className="relative z-20 flex flex-col h-full">
+            {/* Media Container with Flip Logic */}
             <div 
-                className="absolute inset-0 w-full h-full transition-transform duration-700 ease-in-out"
-                style={{ 
-                    transformStyle: 'preserve-3d',
-                    transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                }}
+                className="relative w-full pt-[56.25%] bg-black flex-shrink-0" 
+                style={{ perspective: '1000px' }}
             >
-                {/* Front Face: YouTube Embed */}
-                <div 
-                    className="absolute inset-0 w-full h-full bg-black backface-hidden"
-                    style={{ backfaceVisibility: 'hidden' }}
-                >
-                     {/* Interaction Blocker for Dragging Only */}
-                    <div className={`absolute inset-0 bg-transparent z-30 ${isDragging ? 'block' : 'hidden'}`} />
-                    
-                    {/* YouTube Iframe Wrapper - Stop Propagation so clicks here don't flip the card */}
-                    <div 
-                        className="absolute inset-0 w-full h-full"
-                        onClick={(e) => e.stopPropagation()} 
-                    >
-                        <iframe
-                            src={`https://www.youtube.com/embed/${video.videoId}?modestbranding=1&rel=0`}
-                            title={video.title}
-                            className="w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                        />
-                    </div>
-                </div>
-
-                {/* Back Face: Image */}
+                {/* Flip Indicator (Now Outside the 3D Container so it doesn't flip/mirror) */}
                 {canFlip && (
                     <div 
-                        className="absolute inset-0 w-full h-full bg-surface backface-hidden"
-                        style={{ 
-                            backfaceVisibility: 'hidden', 
-                            transform: 'rotateY(180deg)' 
-                        }}
+                        className={`absolute top-3 right-3 z-20 transition-opacity duration-300 pointer-events-none ${isFlipped ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}
                     >
-                         <img 
-                            src={flipImageUrl} 
-                            alt="Placeholder" 
-                            className="w-full h-full object-cover"
-                         />
+                        <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-white flex items-center gap-2 shadow-xl">
+                            <RotateCw size={14} className="text-primary animate-spin-slow" />
+                            <span className="font-mono text-[10px] font-bold uppercase tracking-wider">Click card to Flip</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* 3D Wrapper */}
+                <div 
+                    className="absolute inset-0 w-full h-full transition-transform duration-700 ease-in-out"
+                    style={{ 
+                        transformStyle: 'preserve-3d',
+                        transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                    }}
+                >
+                    {/* Front Face: YouTube Embed */}
+                    <div 
+                        className="absolute inset-0 w-full h-full bg-black backface-hidden"
+                        style={{ backfaceVisibility: 'hidden' }}
+                    >
+                         {/* Interaction Blocker for Dragging Only */}
+                        <div className={`absolute inset-0 bg-transparent z-30 ${isDragging ? 'block' : 'hidden'}`} />
+                        
+                        {/* YouTube Iframe Wrapper - Stop Propagation so clicks here don't flip the card */}
+                        <div 
+                            className="absolute inset-0 w-full h-full"
+                            onClick={(e) => e.stopPropagation()} 
+                        >
+                            <iframe
+                                src={`https://www.youtube.com/embed/${video.videoId}?modestbranding=1&rel=0`}
+                                title={video.title}
+                                className="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        </div>
+                    </div>
+
+                    {/* Back Face: Image */}
+                    {canFlip && (
+                        <div 
+                            className="absolute inset-0 w-full h-full bg-surface backface-hidden"
+                            style={{ 
+                                backfaceVisibility: 'hidden', 
+                                transform: 'rotateY(180deg)' 
+                            }}
+                        >
+                             <img 
+                                src={flipImageUrl} 
+                                alt="Placeholder" 
+                                className="w-full h-full object-cover"
+                             />
+                        </div>
+                    )}
+                </div>
+            </div>
+        
+            {/* Description Area - Clicking here triggers flip due to parent onClick */}
+            <div className="p-6 flex-1 relative flex flex-col">
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors truncate">
+                    {video.title}
+                </h3>
+                {showDescription && (
+                    <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">
+                        {video.description}
+                    </p>
+                )}
+                
+                {/* Visual hint in the empty area */}
+                {canFlip && (
+                    <div className="mt-auto pt-4 flex justify-end opacity-0 group-hover:opacity-50 transition-opacity duration-300">
+                        <RotateCw size={16} className="text-gray-500" />
                     </div>
                 )}
             </div>
-        </div>
-    
-        {/* Description Area - Clicking here triggers flip due to parent onClick */}
-        <div className="p-6 flex-1 relative flex flex-col">
-            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors truncate">
-                {video.title}
-            </h3>
-            {showDescription && (
-                <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">
-                    {video.description}
-                </p>
-            )}
-            
-            {/* Visual hint in the empty area */}
-            {canFlip && (
-                <div className="mt-auto pt-4 flex justify-end opacity-0 group-hover:opacity-50 transition-opacity duration-300">
-                    <RotateCw size={16} className="text-gray-500" />
-                </div>
-            )}
         </div>
     </div>
   );
